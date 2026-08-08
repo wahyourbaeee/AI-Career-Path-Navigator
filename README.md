@@ -128,7 +128,7 @@ career-path-navigator/
 
 **Wahyu Tirta**  
 Internet Engineering Technology · Politeknik Negeri Lampung  
-[GitHub](https://github.com/wahyourbaeee) · [LinkedIn](www.linkedin.com/in/wahyutirtawardana)
+[GitHub](https://github.com/wahyourbaeee) · [LinkedIn](https://www.linkedin.com/in/wahyutirtawardana)
 
 ---
 
