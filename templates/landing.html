@@ -1,83 +1,706 @@
 {% extends 'base.html' %} {% block content %}
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
-<div class="max-w-2xl mx-auto px-6 py-20">
-  <!-- Hero -->
-  <div class="text-center mb-16">
-    <span class="text-sm text-indigo-400 font-medium tracking-widest uppercase">
-      AI-Powered
-    </span>
-    <h1 class="text-4xl font-bold mt-3 mb-4">
-      Temukan Jalur Karir
-      <br />
-      yang Tepat Buat Lo
-    </h1>
-    <p class="text-gray-400 text-lg">
-      Bingung mau spesialisasi ke mana? Ceritain skill & minat lo, AI akan
-      rekomendasiin jalur karir + learning path yang cocok.
-    </p>
-  </div>
+  * {
+    font-family: "Inter", system-ui, sans-serif;
+  }
 
-  <!-- Form -->
-  <div class="bg-gray-900 rounded-2xl p-8 space-y-6">
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-2">
-        Skill yang lo kuasai
-      </label>
-      <textarea
-        id="skills"
-        rows="3"
-        placeholder="contoh: Python, Django, sedikit Machine Learning, Git..."
-        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
-      ></textarea>
+  body {
+    background: #07080d;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.15) 0%,
+      transparent 70%
+    );
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 20%,
+      black 60%,
+      transparent
+    );
+  }
+
+  .accent {
+    color: #818cf8;
+  }
+  .accent-cyan {
+    color: #22d3ee;
+  }
+
+  .glow-btn {
+    background: #6366f1;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    transition: all 0.2s;
+  }
+  .glow-btn:hover {
+    background: #818cf8;
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+    transform: translateY(-1px);
+  }
+
+  .card {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    transition: border-color 0.2s;
+  }
+  .card:hover {
+    border-color: #6366f1;
+  }
+
+  .tag {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #818cf8;
+  }
+
+  .step-num {
+    background: rgba(34, 211, 238, 0.1);
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    color: #22d3ee;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .result-hidden {
+    display: none;
+  }
+
+  .form-input {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    color: #f1f5f9;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: #6366f1;
+  }
+  .form-input::placeholder {
+    color: #475569;
+  }
+
+  .stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .fade-up {
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  .loading-dots::after {
+    content: "";
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0%,
+    20% {
+      content: "";
+    }
+    40% {
+      content: ".";
+    }
+    60% {
+      content: "..";
+    }
+    80%,
+    100% {
+      content: "...";
+    }
+  }
+</style>
+
+<!-- NAV -->
+<nav
+  style="
+    border-bottom: 1px solid #1e2433;
+    background: rgba(7, 8, 13, 0.8);
+    backdrop-filter: blur(12px);
+  "
+  class="fixed top-0 left-0 right-0 z-50 px-6 py-4"
+>
+  <div class="max-w-5xl mx-auto flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div
+        style="
+          width: 28px;
+          height: 28px;
+          background: linear-gradient(135deg, #6366f1, #22d3ee);
+          border-radius: 8px;
+        "
+      ></div>
+      <span style="color: #f1f5f9; font-weight: 700; font-size: 15px">
+        CareerPath
+        <span class="accent">AI</span>
+      </span>
     </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-2">
-        Hal yang lo suka / minati
-      </label>
-      <textarea
-        id="interests"
-        rows="3"
-        placeholder="contoh: bisnis, problem solving, belajar hal baru, otomasi..."
-        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
-      ></textarea>
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-2">
-        Tujuan karir lo
-      </label>
-      <select
-        id="goal"
-        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
-      >
-        <option value="">Pilih tujuan...</option>
-        <option value="kerja di startup">Kerja di Startup</option>
-        <option value="kerja di perusahaan besar">
-          Kerja di Perusahaan Besar
-        </option>
-        <option value="freelance">Freelance</option>
-        <option value="bangun startup sendiri">Bangun Startup Sendiri</option>
-      </select>
-    </div>
-
-    <button
-      onclick="analyze()"
-      id="btn"
-      class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-4 rounded-xl transition-all duration-200"
+    <a
+      href="#analyze"
+      class="glow-btn text-white text-sm font-semibold px-5 py-2 rounded-lg"
     >
-      Analisis Sekarang →
-    </button>
+      Mulai Gratis
+    </a>
   </div>
+</nav>
 
-  <!-- Result -->
-  <div id="result" class="mt-8 hidden"></div>
-</div>
+<!-- HERO -->
+<section
+  class="relative min-h-screen flex items-center justify-center text-center px-6 pt-20 overflow-hidden"
+>
+  <div class="hero-glow"></div>
+  <div class="grid-bg"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto">
+    <div
+      class="tag inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8"
+    >
+      <span
+        style="
+          width: 6px;
+          height: 6px;
+          background: #22d3ee;
+          border-radius: 50%;
+          display: inline-block;
+        "
+      ></span>
+      Powered by Gemma 4 · 100% Gratis
+    </div>
+
+    <h1
+      style="
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-weight: 900;
+        line-height: 1.1;
+        color: #f1f5f9;
+        letter-spacing: -0.03em;
+      "
+      class="mb-6"
+    >
+      Temukan jalur karir
+      <br />
+      <span
+        style="
+          background: linear-gradient(135deg, #818cf8 0%, #22d3ee 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        "
+      >
+        yang beneran cocok
+      </span>
+      <br />
+      buat lo.
+    </h1>
+
+    <p
+      style="color: #64748b; font-size: 1.1rem; line-height: 1.7"
+      class="mb-10 max-w-xl mx-auto"
+    >
+      Banyak mahasiswa tech punya skill tapi bingung mau spesialisasi ke mana.
+      Ceritain profil lo — AI akan analisis dan kasih rekomendasi karir +
+      learning path yang personal.
+    </p>
+
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <a
+        href="#analyze"
+        class="glow-btn text-white font-semibold px-8 py-3.5 rounded-xl text-sm"
+      >
+        Analisis Karir Gue →
+      </a>
+      <a
+        href="#how"
+        style="
+          color: #94a3b8;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        "
+      >
+        Cara kerjanya
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div
+      style="margin-top: 64px; padding-top: 32px; border-top: 1px solid #1e2433"
+      class="grid grid-cols-3 gap-8 max-w-sm mx-auto"
+    >
+      <div>
+        <div class="stat-num">AI</div>
+        <div style="color: #475569; font-size: 12px; margin-top: 4px">
+          Analisis mendalam
+        </div>
+      </div>
+      <div>
+        <div class="stat-num">Free</div>
+        <div style="color: #475569; font-size: 12px; margin-top: 4px">
+          Tanpa biaya
+        </div>
+      </div>
+      <div>
+        <div class="stat-num">&lt;30s</div>
+        <div style="color: #475569; font-size: 12px; margin-top: 4px">
+          Hasil instan
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="padding: 100px 24px; border-top: 1px solid #1e2433">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="tag inline-block px-3 py-1 rounded-full text-xs mb-4">
+        Cara Kerja
+      </div>
+      <h2
+        style="
+          font-size: 2rem;
+          font-weight: 800;
+          color: #f1f5f9;
+          letter-spacing: -0.02em;
+        "
+      >
+        Tiga langkah. Satu rekomendasi.
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div class="card rounded-2xl p-6">
+        <div class="step-num mb-4">01</div>
+        <h3 style="color: #f1f5f9; font-weight: 700; margin-bottom: 8px">
+          Ceritain profil lo
+        </h3>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6">
+          Isi skill yang lo kuasai, hal yang lo suka, dan tujuan karir lo ke
+          depan.
+        </p>
+      </div>
+      <div class="card rounded-2xl p-6">
+        <div class="step-num mb-4">02</div>
+        <h3 style="color: #f1f5f9; font-weight: 700; margin-bottom: 8px">
+          AI analisis profil lo
+        </h3>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6">
+          Model AI proses data lo dan cocokkan dengan ratusan jalur karir di
+          industri tech.
+        </p>
+      </div>
+      <div class="card rounded-2xl p-6">
+        <div class="step-num mb-4">03</div>
+        <h3 style="color: #f1f5f9; font-weight: 700; margin-bottom: 8px">
+          Dapat roadmap personal
+        </h3>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6">
+          Spesialisasi, learning path terstruktur, skill gap, dan estimasi
+          timeline siap kerja.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section style="padding: 80px 24px; border-top: 1px solid #1e2433">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="tag inline-block px-3 py-1 rounded-full text-xs mb-4">
+        Output
+      </div>
+      <h2
+        style="
+          font-size: 2rem;
+          font-weight: 800;
+          color: #f1f5f9;
+          letter-spacing: -0.02em;
+        "
+      >
+        Apa yang lo dapat.
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div class="card rounded-2xl p-6 flex gap-4">
+        <div
+          style="
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          "
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#818cf8"
+            stroke-width="2"
+          >
+            <path
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3
+            style="
+              color: #f1f5f9;
+              font-weight: 700;
+              margin-bottom: 6px;
+              font-size: 15px;
+            "
+          >
+            Rekomendasi Spesialisasi
+          </h3>
+          <p style="color: #475569; font-size: 13px; line-height: 1.6">
+            AI rekomendasiin jalur spesialisasi yang paling cocok berdasarkan
+            kombinasi skill & minat lo.
+          </p>
+        </div>
+      </div>
+
+      <div class="card rounded-2xl p-6 flex gap-4">
+        <div
+          style="
+            width: 40px;
+            height: 40px;
+            background: rgba(34, 211, 238, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          "
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#22d3ee"
+            stroke-width="2"
+          >
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+          </svg>
+        </div>
+        <div>
+          <h3
+            style="
+              color: #f1f5f9;
+              font-weight: 700;
+              margin-bottom: 6px;
+              font-size: 15px;
+            "
+          >
+            Learning Path Terstruktur
+          </h3>
+          <p style="color: #475569; font-size: 13px; line-height: 1.6">
+            Daftar topik yang harus dipelajari, diurutkan dari yang paling
+            fundamental sampai advanced.
+          </p>
+        </div>
+      </div>
+
+      <div class="card rounded-2xl p-6 flex gap-4">
+        <div
+          style="
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          "
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#818cf8"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4l3 3" />
+          </svg>
+        </div>
+        <div>
+          <h3
+            style="
+              color: #f1f5f9;
+              font-weight: 700;
+              margin-bottom: 6px;
+              font-size: 15px;
+            "
+          >
+            Estimasi Timeline
+          </h3>
+          <p style="color: #475569; font-size: 13px; line-height: 1.6">
+            Perkiraan berapa lama lo butuh untuk siap masuk ke industri di jalur
+            yang dipilih.
+          </p>
+        </div>
+      </div>
+
+      <div class="card rounded-2xl p-6 flex gap-4">
+        <div
+          style="
+            width: 40px;
+            height: 40px;
+            background: rgba(34, 211, 238, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          "
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#22d3ee"
+            stroke-width="2"
+          >
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </div>
+        <div>
+          <h3
+            style="
+              color: #f1f5f9;
+              font-weight: 700;
+              margin-bottom: 6px;
+              font-size: 15px;
+            "
+          >
+            Skill Gap Analysis
+          </h3>
+          <p style="color: #475569; font-size: 13px; line-height: 1.6">
+            Tau persis skill apa yang masih kurang dan harus lo pelajari untuk
+            mencapai tujuan karir lo.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM / CTA -->
+<section
+  id="analyze"
+  style="padding: 100px 24px; border-top: 1px solid #1e2433"
+>
+  <div class="max-w-xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="tag inline-block px-3 py-1 rounded-full text-xs mb-4">
+        Mulai Sekarang
+      </div>
+      <h2
+        style="
+          font-size: 2rem;
+          font-weight: 800;
+          color: #f1f5f9;
+          letter-spacing: -0.02em;
+        "
+      >
+        Analisis karir lo
+        <br />
+        <span
+          style="
+            background: linear-gradient(135deg, #818cf8, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          "
+        >
+          sekarang, gratis.
+        </span>
+      </h2>
+      <p style="color: #475569; margin-top: 12px; font-size: 14px">
+        Isi form di bawah, AI langsung analisis profil lo.
+      </p>
+    </div>
+
+    <div class="card rounded-2xl p-8 space-y-5">
+      <div>
+        <label
+          style="
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+          "
+        >
+          Skill yang lo kuasai
+        </label>
+        <textarea
+          id="skills"
+          rows="3"
+          placeholder="contoh: Python, Django, sedikit ML, Git, Docker..."
+          class="form-input w-full rounded-xl px-4 py-3 text-sm resize-none"
+          style="font-family: inherit"
+        ></textarea>
+      </div>
+
+      <div>
+        <label
+          style="
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+          "
+        >
+          Hal yang lo suka / minati
+        </label>
+        <textarea
+          id="interests"
+          rows="3"
+          placeholder="contoh: bisnis, problem solving, otomasi, belajar hal baru..."
+          class="form-input w-full rounded-xl px-4 py-3 text-sm resize-none"
+          style="font-family: inherit"
+        ></textarea>
+      </div>
+
+      <div>
+        <label
+          style="
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+          "
+        >
+          Tujuan karir lo
+        </label>
+        <select
+          id="goal"
+          class="form-input w-full rounded-xl px-4 py-3 text-sm"
+          style="font-family: inherit"
+        >
+          <option value="">Pilih tujuan...</option>
+          <option value="kerja di startup">Kerja di Startup</option>
+          <option value="kerja di perusahaan besar">
+            Kerja di Perusahaan Besar
+          </option>
+          <option value="freelance">Freelance</option>
+          <option value="bangun startup sendiri">Bangun Startup Sendiri</option>
+        </select>
+      </div>
+
+      <button
+        onclick="analyze()"
+        id="btn"
+        class="glow-btn w-full text-white font-semibold py-4 rounded-xl text-sm"
+      >
+        Analisis Sekarang →
+      </button>
+    </div>
+
+    <!-- Result -->
+    <div id="result" class="result-hidden mt-6"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer
+  style="border-top: 1px solid #1e2433; padding: 32px 24px; text-align: center"
+>
+  <div
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    "
+  >
+    <div
+      style="
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(135deg, #6366f1, #22d3ee);
+        border-radius: 6px;
+      "
+    ></div>
+    <span style="color: #f1f5f9; font-weight: 700; font-size: 14px">
+      CareerPath
+      <span class="accent">AI</span>
+    </span>
+  </div>
+  <p style="color: #334155; font-size: 12px">
+    Built with Django & AI · Open Source
+  </p>
+</footer>
 
 <script>
   async function analyze() {
-    const skills = document.getElementById("skills").value;
-    const interests = document.getElementById("interests").value;
+    const skills = document.getElementById("skills").value.trim();
+    const interests = document.getElementById("interests").value.trim();
     const goal = document.getElementById("goal").value;
 
     if (!skills || !interests || !goal) {
@@ -86,8 +709,9 @@
     }
 
     const btn = document.getElementById("btn");
-    btn.textContent = "Menganalisis...";
+    btn.innerHTML = '<span class="loading-dots">Menganalisis</span>';
     btn.disabled = true;
+    btn.style.opacity = "0.7";
 
     try {
       const response = await fetch("/analyze/", {
@@ -101,58 +725,64 @@
     } catch (err) {
       alert("Terjadi error, coba lagi.");
     } finally {
-      btn.textContent = "Analisis Sekarang →";
+      btn.innerHTML = "Analisis Sekarang →";
       btn.disabled = false;
+      btn.style.opacity = "1";
     }
   }
 
   function showResult(data) {
     const result = document.getElementById("result");
-    result.classList.remove("hidden");
+    result.classList.remove("result-hidden");
     result.innerHTML = `
-        <div class="bg-gray-900 rounded-2xl p-8 space-y-6">
-            <div>
-                <span class="text-xs text-indigo-400 uppercase tracking-widest">Spesialisasi yang Cocok</span>
-                <h2 class="text-2xl font-bold mt-1">${data.specialization}</h2>
-                <p class="text-gray-400 mt-2">${data.reason}</p>
-            </div>
+    <div style="background:#0f1117;border:1px solid #1e2433;border-radius:16px;padding:32px;animation:fadeUp 0.4s ease;">
+      
+      <div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #1e2433;">
+        <span style="font-size:11px;color:#818cf8;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Spesialisasi yang Cocok</span>
+        <h2 style="font-size:1.6rem;font-weight:800;color:#f1f5f9;margin-top:6px;letter-spacing:-0.02em;">${data.specialization}</h2>
+        <p style="color:#64748b;font-size:14px;margin-top:8px;line-height:1.6;">${data.reason}</p>
+      </div>
 
-            <div>
-                <span class="text-xs text-indigo-400 uppercase tracking-widest">Learning Path</span>
-                <ul class="mt-3 space-y-2">
-                    ${data.learning_path
-                      .map(
-                        (item, i) => `
-                        <li class="flex items-start gap-3">
-                            <span class="text-indigo-500 font-bold">${i + 1}.</span>
-                            <span class="text-gray-300">${item}</span>
-                        </li>
-                    `,
-                      )
-                      .join("")}
-                </ul>
+      <div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #1e2433;">
+        <span style="font-size:11px;color:#22d3ee;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Learning Path</span>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+          ${data.learning_path
+            .map(
+              (item, i) => `
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+              <span style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.2);color:#22d3ee;
+                           width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+                           font-size:11px;font-weight:700;flex-shrink:0;">${i + 1}</span>
+              <span style="color:#cbd5e1;font-size:14px;padding-top:3px;">${item}</span>
             </div>
-
-            <div>
-                <span class="text-xs text-indigo-400 uppercase tracking-widest">Skill Gap</span>
-                <div class="flex flex-wrap gap-2 mt-3">
-                    ${data.skill_gap
-                      .map(
-                        (skill) => `
-                        <span class="bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm">${skill}</span>
-                    `,
-                      )
-                      .join("")}
-                </div>
-            </div>
-
-            <div class="bg-indigo-950 border border-indigo-800 rounded-xl px-5 py-4">
-                <span class="text-xs text-indigo-400 uppercase tracking-widest">Estimasi Timeline</span>
-                <p class="text-white font-medium mt-1">${data.timeline}</p>
-            </div>
+          `,
+            )
+            .join("")}
         </div>
-    `;
-    result.scrollIntoView({ behavior: "smooth" });
+      </div>
+
+      <div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #1e2433;">
+        <span style="font-size:11px;color:#818cf8;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Skill Gap</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+          ${data.skill_gap
+            .map(
+              (skill) => `
+            <span style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);
+                         color:#94a3b8;padding:5px 12px;border-radius:20px;font-size:12px;">${skill}</span>
+          `,
+            )
+            .join("")}
+        </div>
+      </div>
+
+      <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:12px;padding:16px;">
+        <span style="font-size:11px;color:#818cf8;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Estimasi Timeline</span>
+        <p style="color:#f1f5f9;font-weight:700;font-size:1rem;margin-top:6px;">${data.timeline}</p>
+      </div>
+
+    </div>
+  `;
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 </script>
 
