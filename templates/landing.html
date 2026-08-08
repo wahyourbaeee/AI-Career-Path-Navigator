@@ -88,10 +88,6 @@
     font-size: 13px;
   }
 
-  .result-hidden {
-    display: none;
-  }
-
   .form-input {
     background: #0f1117;
     border: 1px solid #1e2433;
@@ -117,35 +113,22 @@
   @keyframes fadeUp {
     from {
       opacity: 0;
+      transform: translateY(20px) translateX(-50%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) translateX(-50%);
+    }
+  }
+
+  @keyframes fadeUpResult {
+    from {
+      opacity: 0;
       transform: translateY(20px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-  .fade-up {
-    animation: fadeUp 0.6s ease forwards;
-  }
-
-  .loading-dots::after {
-    content: "";
-    animation: dots 1.2s steps(4, end) infinite;
-  }
-  @keyframes dots {
-    0%,
-    20% {
-      content: "";
-    }
-    40% {
-      content: ".";
-    }
-    60% {
-      content: "..";
-    }
-    80%,
-    100% {
-      content: "...";
     }
   }
 </style>
@@ -662,7 +645,7 @@
     </div>
 
     <!-- Result -->
-    <div id="result" class="result-hidden mt-6"></div>
+    <div id="result" style="display: none" class="mt-6"></div>
   </div>
 </section>
 
@@ -698,18 +681,40 @@
 </footer>
 
 <script>
+  function showToast(message, type = "error") {
+    const existing = document.getElementById("toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "toast";
+    toast.style.cssText = `
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: ${type === "error" ? "#1e1025" : "#0f1e1a"};
+    border: 1px solid ${type === "error" ? "#7c3aed" : "#059669"};
+    color: ${type === "error" ? "#c4b5fd" : "#6ee7b7"};
+    padding: 12px 24px; border-radius: 12px;
+    font-size: 14px; font-weight: 500;
+    z-index: 9999; white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    animation: fadeUp 0.3s ease forwards;
+  `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
   async function analyze() {
     const skills = document.getElementById("skills").value.trim();
     const interests = document.getElementById("interests").value.trim();
     const goal = document.getElementById("goal").value;
 
     if (!skills || !interests || !goal) {
-      alert("Isi semua field dulu ya!");
+      showToast("Isi semua field dulu ya!", "error");
       return;
     }
 
     const btn = document.getElementById("btn");
-    btn.innerHTML = '<span class="loading-dots">Menganalisis</span>';
+    btn.innerHTML = "Menganalisis...";
     btn.disabled = true;
     btn.style.opacity = "0.7";
 
@@ -722,8 +727,9 @@
 
       const data = await response.json();
       showResult(data);
+      showToast("Analisis selesai!", "success");
     } catch (err) {
-      alert("Terjadi error, coba lagi.");
+      showToast("Terjadi error, coba lagi.", "error");
     } finally {
       btn.innerHTML = "Analisis Sekarang →";
       btn.disabled = false;
@@ -733,10 +739,10 @@
 
   function showResult(data) {
     const result = document.getElementById("result");
-    result.classList.remove("result-hidden");
+    result.style.display = "block";
     result.innerHTML = `
-    <div style="background:#0f1117;border:1px solid #1e2433;border-radius:16px;padding:32px;animation:fadeUp 0.4s ease;">
-      
+    <div style="background:#0f1117;border:1px solid #1e2433;border-radius:16px;padding:32px;animation:fadeUpResult 0.4s ease;">
+
       <div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #1e2433;">
         <span style="font-size:11px;color:#818cf8;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Spesialisasi yang Cocok</span>
         <h2 style="font-size:1.6rem;font-weight:800;color:#f1f5f9;margin-top:6px;letter-spacing:-0.02em;">${data.specialization}</h2>
