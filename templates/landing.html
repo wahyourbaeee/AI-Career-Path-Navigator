@@ -1,0 +1,159 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="max-w-2xl mx-auto px-6 py-20">
+  <!-- Hero -->
+  <div class="text-center mb-16">
+    <span class="text-sm text-indigo-400 font-medium tracking-widest uppercase">
+      AI-Powered
+    </span>
+    <h1 class="text-4xl font-bold mt-3 mb-4">
+      Temukan Jalur Karir
+      <br />
+      yang Tepat Buat Lo
+    </h1>
+    <p class="text-gray-400 text-lg">
+      Bingung mau spesialisasi ke mana? Ceritain skill & minat lo, AI akan
+      rekomendasiin jalur karir + learning path yang cocok.
+    </p>
+  </div>
+
+  <!-- Form -->
+  <div class="bg-gray-900 rounded-2xl p-8 space-y-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Skill yang lo kuasai
+      </label>
+      <textarea
+        id="skills"
+        rows="3"
+        placeholder="contoh: Python, Django, sedikit Machine Learning, Git..."
+        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
+      ></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Hal yang lo suka / minati
+      </label>
+      <textarea
+        id="interests"
+        rows="3"
+        placeholder="contoh: bisnis, problem solving, belajar hal baru, otomasi..."
+        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
+      ></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Tujuan karir lo
+      </label>
+      <select
+        id="goal"
+        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
+      >
+        <option value="">Pilih tujuan...</option>
+        <option value="kerja di startup">Kerja di Startup</option>
+        <option value="kerja di perusahaan besar">
+          Kerja di Perusahaan Besar
+        </option>
+        <option value="freelance">Freelance</option>
+        <option value="bangun startup sendiri">Bangun Startup Sendiri</option>
+      </select>
+    </div>
+
+    <button
+      onclick="analyze()"
+      id="btn"
+      class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-4 rounded-xl transition-all duration-200"
+    >
+      Analisis Sekarang →
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div id="result" class="mt-8 hidden"></div>
+</div>
+
+<script>
+  async function analyze() {
+    const skills = document.getElementById("skills").value;
+    const interests = document.getElementById("interests").value;
+    const goal = document.getElementById("goal").value;
+
+    if (!skills || !interests || !goal) {
+      alert("Isi semua field dulu ya!");
+      return;
+    }
+
+    const btn = document.getElementById("btn");
+    btn.textContent = "Menganalisis...";
+    btn.disabled = true;
+
+    try {
+      const response = await fetch("/analyze/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills, interests, goal }),
+      });
+
+      const data = await response.json();
+      showResult(data);
+    } catch (err) {
+      alert("Terjadi error, coba lagi.");
+    } finally {
+      btn.textContent = "Analisis Sekarang →";
+      btn.disabled = false;
+    }
+  }
+
+  function showResult(data) {
+    const result = document.getElementById("result");
+    result.classList.remove("hidden");
+    result.innerHTML = `
+        <div class="bg-gray-900 rounded-2xl p-8 space-y-6">
+            <div>
+                <span class="text-xs text-indigo-400 uppercase tracking-widest">Spesialisasi yang Cocok</span>
+                <h2 class="text-2xl font-bold mt-1">${data.specialization}</h2>
+                <p class="text-gray-400 mt-2">${data.reason}</p>
+            </div>
+
+            <div>
+                <span class="text-xs text-indigo-400 uppercase tracking-widest">Learning Path</span>
+                <ul class="mt-3 space-y-2">
+                    ${data.learning_path
+                      .map(
+                        (item, i) => `
+                        <li class="flex items-start gap-3">
+                            <span class="text-indigo-500 font-bold">${i + 1}.</span>
+                            <span class="text-gray-300">${item}</span>
+                        </li>
+                    `,
+                      )
+                      .join("")}
+                </ul>
+            </div>
+
+            <div>
+                <span class="text-xs text-indigo-400 uppercase tracking-widest">Skill Gap</span>
+                <div class="flex flex-wrap gap-2 mt-3">
+                    ${data.skill_gap
+                      .map(
+                        (skill) => `
+                        <span class="bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm">${skill}</span>
+                    `,
+                      )
+                      .join("")}
+                </div>
+            </div>
+
+            <div class="bg-indigo-950 border border-indigo-800 rounded-xl px-5 py-4">
+                <span class="text-xs text-indigo-400 uppercase tracking-widest">Estimasi Timeline</span>
+                <p class="text-white font-medium mt-1">${data.timeline}</p>
+            </div>
+        </div>
+    `;
+    result.scrollIntoView({ behavior: "smooth" });
+  }
+</script>
+
+{% endblock %}
